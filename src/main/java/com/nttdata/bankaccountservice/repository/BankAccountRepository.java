@@ -4,6 +4,7 @@ import com.nttdata.bankaccountservice.document.BankAccount;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * Bank Account Repository.
@@ -16,4 +17,6 @@ public interface BankAccountRepository extends ReactiveMongoRepository<BankAccou
     Flux<BankAccount> findByDebitCardId(String debitCardId);
 
     Flux<BankAccount> findByCustomerId(String customerId);
+
+    Mono<BankAccount> findByNumberAccount(String numberAccount);
 }

@@ -48,4 +48,6 @@ public interface BankAccountService {
     Mono<String> findClientHasDebt(String clientId);
 
     Mono<BankCreditDto> doPayCreditThird(TransactionPayCreditThirdDto t);
+
+    Mono<BankAccount> findByNumberAccount(String numberAccount);
 }
