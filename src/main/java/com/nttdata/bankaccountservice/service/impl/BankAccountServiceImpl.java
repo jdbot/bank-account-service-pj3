@@ -160,7 +160,7 @@ public class BankAccountServiceImpl implements BankAccountService {
     @Override
     public Mono<BankAccount> doCommission(Transaction transaction) {
         return findById(transaction.getIdAccount()).flatMap(x -> {
-            if( x.getNumberOfTransactions() + 1 > x.getTransactionLimit()) {
+            if( x.getNumberOfTransactions() > x.getTransactionLimit()) {
                 float newAmount = x.getAmount() - x.getCommission();
                 if( newAmount >= 0) {
                     transaction.setType("commission");
