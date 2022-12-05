@@ -22,4 +22,6 @@ public class Transaction {
     private String idAccount;
     //Associated account's amount after transaction
     private float accountAmount;
+    //Associated card's ID
+    private String idCard;
 }

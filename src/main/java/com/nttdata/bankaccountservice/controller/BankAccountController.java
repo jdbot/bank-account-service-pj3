@@ -1,11 +1,8 @@
 package com.nttdata.bankaccountservice.controller;
 
 import com.nttdata.bankaccountservice.document.BankAccount;
-import com.nttdata.bankaccountservice.dto.BankCreditDto;
-import com.nttdata.bankaccountservice.dto.ClientDto;
+import com.nttdata.bankaccountservice.dto.*;
 import com.nttdata.bankaccountservice.document.Transaction;
-import com.nttdata.bankaccountservice.dto.TransactionBetweenAccountsDto;
-import com.nttdata.bankaccountservice.dto.TransactionPayCreditThirdDto;
 import com.nttdata.bankaccountservice.service.BankAccountService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,7 +72,7 @@ public class BankAccountController {
     }
 
     //Method to get a client by ID
-     @GetMapping("/findClientById/{id}")
+    @GetMapping("/findClientById/{id}")
     @ResponseStatus(HttpStatus.OK)
     @CircuitBreaker(name="client", fallbackMethod = "fallBackGetFindByClientId")
     public Mono<ClientDto> findByClientId(@PathVariable("id") String id) {
@@ -99,14 +96,14 @@ public class BankAccountController {
     //Method to do a deposit
     @PutMapping("/deposit")
     @ResponseStatus(HttpStatus.OK)
-    public Mono<BankAccount> doDeposit(@RequestBody Transaction transaction) {
+    public Mono<BankAccount> doDeposit(@RequestBody TransactionDto transaction) {
         return bankAccountService.doDeposit(transaction);
     }
 
     //Method to do a withdrawl
     @PutMapping("/withdrawl")
     @ResponseStatus(HttpStatus.OK)
-    public Mono<BankAccount> doWithdrawl(@RequestBody Transaction transaction) {
+    public Mono<BankAccount> doWithdrawl(@RequestBody TransactionDto transaction) {
         return bankAccountService.doWithdrawl(transaction);
     }
 

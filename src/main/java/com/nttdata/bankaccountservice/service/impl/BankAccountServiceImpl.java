@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -110,17 +111,15 @@ public class BankAccountServiceImpl implements BankAccountService {
             .next();
     }
 
-    public Mono<BankAccount> doDeposit(Transaction transaction) {
-        return findById(transaction.getIdAccount()).flatMap(x -> {
+    public Mono<BankAccount> doDeposit(TransactionDto transaction) {
+        return findById(transaction.getAccountId()).flatMap(x -> {
             float newAmount = x.getAmount() + transaction.getAmount();
-            transaction.setType("deposit");
-            transaction.setIdClient(x.getCustomerId());
-            transaction.setAccountAmount(newAmount);
+            Transaction t = new Transaction(LocalDate.now().toString(),transaction.getAmount(),"deposit",x.getCustomerId(), transaction.getAccountId(), newAmount, x.getDebitCardId());
             x.setAmount(newAmount);
             x.setNumberOfTransactions(x.getNumberOfTransactions()+1);
             return this.webClient.build().post().uri("/transaction/").
                     header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).
-                    body(Mono.just(transaction), Transaction.class).
+                    body(Mono.just(t), Transaction.class).
                     retrieve().
                     bodyToMono(Transaction.class).
                     flatMap(y -> update(x));
@@ -128,21 +127,19 @@ public class BankAccountServiceImpl implements BankAccountService {
     }
 
     @Override
-    public Mono<BankAccount> doWithdrawl(Transaction transaction) {
-        return findById(transaction.getIdAccount()).flatMap(x -> {
+    public Mono<BankAccount> doWithdrawl(TransactionDto transaction) {
+        return findById(transaction.getAccountId()).flatMap(x -> {
             float newAmount = x.getAmount() - transaction.getAmount();
             if( newAmount >= 0) {
-                transaction.setType("withdrawl");
-                transaction.setIdClient(x.getCustomerId());
-                transaction.setAccountAmount(newAmount);
+                Transaction t = new Transaction(LocalDate.now().toString(),transaction.getAmount(),"withdrawl",x.getCustomerId(), transaction.getAccountId(), newAmount, x.getDebitCardId());
                 x.setAmount(newAmount);
                 x.setNumberOfTransactions(x.getNumberOfTransactions()+1);
                 return this.webClient.build().post().uri("/transaction/").
                         header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).
-                        body(Mono.just(transaction), Transaction.class).
+                        body(Mono.just(t), Transaction.class).
                         retrieve().
                         bodyToMono(Transaction.class).
-                        flatMap(y -> update(x).flatMap(z->doCommission(transaction)));
+                        flatMap(y -> update(x).flatMap(z->doCommission(t)));
             }else{
                 return Mono.empty();
             }
@@ -150,8 +147,8 @@ public class BankAccountServiceImpl implements BankAccountService {
     }
     @Override
     public Mono<BankAccount> doTransactionBetweenAccounts(TransactionBetweenAccountsDto t) {
-        Transaction tSender = new Transaction(t.getTransactionDate(), t.getAmount(), "withdrawl",null, t.getSenderAccountId(), 0);
-        Transaction tReceptor = new Transaction(t.getTransactionDate(), t.getAmount(), "deposit", null, t.getReceptorAccountId(), 0);
+        TransactionDto tSender = new TransactionDto(t.getSenderAccountId(), t.getAmount());
+        TransactionDto tReceptor = new TransactionDto(t.getReceptorAccountId(), t.getAmount());
         return doWithdrawl(tSender).flatMap(x -> doDeposit(tReceptor));
     }
     @Override
@@ -159,15 +156,21 @@ public class BankAccountServiceImpl implements BankAccountService {
         return findById(transaction.getIdAccount()).flatMap(x -> {
             if( x.getNumberOfTransactions() + 1 > x.getTransactionLimit()) {
                 float newAmount = x.getAmount() - x.getCommission();
-                transaction.setType("commission");
-                transaction.setIdClient(x.getCustomerId());
-                transaction.setAccountAmount(newAmount);
-                return this.webClient.build().post().uri("/transaction/").
-                    header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).
-                    body(Mono.just(transaction), Transaction.class).
-                    retrieve().
-                    bodyToMono(Transaction.class).
-                    flatMap(y -> update(x));
+                if( newAmount >= 0) {
+                    transaction.setType("commission");
+                    transaction.setIdClient(x.getCustomerId());
+                    transaction.setAmount(x.getCommission());
+                    transaction.setAccountAmount(newAmount);
+                    x.setAmount(newAmount);
+                    return this.webClient.build().post().uri("/transaction/").
+                        header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).
+                        body(Mono.just(transaction), Transaction.class).
+                        retrieve().
+                        bodyToMono(Transaction.class).
+                        flatMap(y -> update(x));
+                }else{
+                    return Mono.empty();
+                }
             } else {
                 return Mono.empty();
             }
@@ -211,8 +214,8 @@ public class BankAccountServiceImpl implements BankAccountService {
     }
     @Override
     public Mono<BankCreditDto> doPayCreditThird(TransactionPayCreditThirdDto t) {
-        Transaction tSender = new Transaction(t.getTransactionDate(), t.getAmount(), "withdrawl",null, t.getSenderAccountId(), 0);
-        Transaction tReceptor = new Transaction(t.getTransactionDate(), t.getAmount(), "credit payment", null, t.getReceptorCreditId(), 0);
+        TransactionDto tSender = new TransactionDto(t.getSenderAccountId(), t.getAmount());
+        Transaction tReceptor = new Transaction(t.getTransactionDate(), t.getAmount(), "credit payment", null, t.getReceptorCreditId(), 0, null);
         return doWithdrawl(tSender).flatMap(x -> {
             return this.webClient.build().post().uri("/bankCredit/paycredit").bodyValue(tReceptor)
                     .retrieve().bodyToFlux(BankCreditDto.class).next();

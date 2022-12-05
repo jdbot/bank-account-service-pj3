@@ -29,9 +29,9 @@ public interface BankAccountService {
 
     Mono<BankAccount> validateRegister(BankAccount bankAccount);
 
-    Mono<BankAccount> doDeposit(Transaction transaction);
+    Mono<BankAccount> doDeposit(TransactionDto transaction);
 
-    Mono<BankAccount> doWithdrawl(Transaction transaction);
+    Mono<BankAccount> doWithdrawl(TransactionDto transaction);
 
     Mono<BankAccount> doTransactionBetweenAccounts(TransactionBetweenAccountsDto t);
 
