@@ -221,4 +221,9 @@ public class BankAccountServiceImpl implements BankAccountService {
                     .retrieve().bodyToFlux(BankCreditDto.class).next();
         });
     }
+
+    @Override
+    public Mono<BankAccount> findByNumberAccount(String numberAccount) {
+        return bankAccountRepository.findByNumberAccount(numberAccount);
+    }
 }
