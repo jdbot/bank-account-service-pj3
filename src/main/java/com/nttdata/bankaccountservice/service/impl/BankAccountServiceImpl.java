@@ -122,7 +122,10 @@ public class BankAccountServiceImpl implements BankAccountService {
                     body(Mono.just(t), Transaction.class).
                     retrieve().
                     bodyToMono(Transaction.class).
-                    flatMap(y -> update(x));
+                    flatMap(y -> update(x).map(z->{
+                        doCommission(t);
+                        return x;
+                    }));
         });
     }
 
@@ -139,7 +142,10 @@ public class BankAccountServiceImpl implements BankAccountService {
                         body(Mono.just(t), Transaction.class).
                         retrieve().
                         bodyToMono(Transaction.class).
-                        flatMap(y -> update(x).flatMap(z->doCommission(t)));
+                        flatMap(y -> update(x).map(z->{
+                            doCommission(t);
+                            return x;
+                        }));
             }else{
                 return Mono.empty();
             }
@@ -202,8 +208,7 @@ public class BankAccountServiceImpl implements BankAccountService {
 
     public Flux<BankAccount> findByCustomerId(String customerId) {
         LOGGER.info("findByCustomerId");
-        return this.bankAccountRepository.findByCustomerId(
-                        customerId);
+        return this.bankAccountRepository.findByCustomerId(customerId);
     }
 
     @Override
@@ -213,13 +218,15 @@ public class BankAccountServiceImpl implements BankAccountService {
                 .flatMap(x->Mono.just("1"));
     }
     @Override
-    public Mono<BankCreditDto> doPayCreditThird(TransactionPayCreditThirdDto t) {
+    public Mono<BankAccount> doPayCreditThird(TransactionPayCreditThirdDto t) {
         TransactionDto tSender = new TransactionDto(t.getSenderAccountId(), t.getAmount());
-        Transaction tReceptor = new Transaction(t.getTransactionDate(), t.getAmount(), "credit payment", null, t.getReceptorCreditId(), 0, null);
-        return doWithdrawl(tSender).flatMap(x -> {
-            return this.webClient.build().post().uri("/bankCredit/paycredit").bodyValue(tReceptor)
-                    .retrieve().bodyToFlux(BankCreditDto.class).next();
-        });
+        TransactionDto tReceptor = new TransactionDto(t.getReceptorCreditId(), t.getAmount());
+        return this.webClient.build().put().uri("/bankCredit/paycredit")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .body(Mono.just(tReceptor), TransactionDto.class)
+                .retrieve()
+                .bodyToMono(BankCreditDto.class)
+                .flatMap( y -> doWithdrawl(tSender));
     }
 
     @Override

@@ -145,7 +145,7 @@ public class BankAccountController {
     //Method to do a Payment of credit to third
     @PutMapping("/tpt")
     @ResponseStatus(HttpStatus.OK)
-    public Mono<BankCreditDto> doPayCreditThird(@RequestBody TransactionPayCreditThirdDto tba) {
+    public Mono<BankAccount> doPayCreditThird(@RequestBody TransactionPayCreditThirdDto tba) {
         return bankAccountService.doPayCreditThird(tba);
     }
 
