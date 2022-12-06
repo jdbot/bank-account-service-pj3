@@ -26,9 +26,6 @@ class BankAccountServiceApplicationTests {
 	@Autowired
 	private BankAccountService bankAccountService;
 
-//	@MockBean
-//	private BankAccountService bankAccountService;
-
 	@Test
 	void findAllTest() {
 		client.get()
@@ -102,31 +99,9 @@ class BankAccountServiceApplicationTests {
 		client.delete()
 				.uri("/bankAccount/{id}", Collections.singletonMap("id",ba.getId()))
 				.exchange()
-				.expectStatus().isNoContent()
+				.expectStatus().isOk()
 				.expectBody();
 	}
 
-	@DisplayName("Test o save bankAccount with validation")
-	@Test
-	void validateRegisterTest() {
-
-//		Mockito.when(bankAccountService.findClientHasDebt("63771520f2f20b0f9489203e")).thenReturn(Mono.just("1"));
-		Mockito.when(bankAccountService.findClientHasDebt("63771520f2f20b0f9489203e")).thenReturn(Mono.just("0"));
-
-		BankAccount ba = new BankAccount(null,"656567878",Float.parseFloat("1400"),"","63771520f2f20b0f9489203e","",
-				"636eea6e33ec63cafaf72fd2",0,5,2,"",false,"","2022-11-30");
-
-		client.post()
-				.uri("/bankAccount/register")
-				.body(Mono.just(ba), BankAccount.class)
-				.exchange()
-				.expectStatus().isCreated()
-				.expectBody(BankAccount.class)
-				.consumeWith( response ->{
-					BankAccount b = response.getResponseBody();
-					System.out.println("hola aqui ");
-//					Assertions.assertThat(b.getNumberAccount().equals("656567878")).isTrue();
-				});
-	}
 
 }

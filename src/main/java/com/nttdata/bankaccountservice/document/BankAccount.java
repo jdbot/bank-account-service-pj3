@@ -27,8 +27,6 @@ public class BankAccount {
     private String endDate;
     //id of the client
     private String customerId;
-    //full name of the client
-    private String customerName;
     //type of the bank account
     private String type;
     //quantity of transactions done by the account

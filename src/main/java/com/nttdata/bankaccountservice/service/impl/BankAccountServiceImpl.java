@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Bank Account Service Implementation.
@@ -81,6 +82,8 @@ public class BankAccountServiceImpl implements BankAccountService {
             .retrieve()
             .bodyToMono(ClientDto.class)
             .flatMap(dc -> {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                bankAccount.setCreationDate(LocalDate.now().format(formatter));
                 if (dc.getType().equals("business")) {
                     return this.accountTypeService.findById(bankAccount.getType()).filter(obj ->
                         obj.getCode().equals("3"))
@@ -217,7 +220,7 @@ public class BankAccountServiceImpl implements BankAccountService {
         TransactionDto tSender = new TransactionDto(t.getSenderAccountId(), t.getAmount());
         Transaction tReceptor = new Transaction(t.getTransactionDate(), t.getAmount(), "credit payment", null, t.getReceptorCreditId(), 0, null);
         return doWithdrawl(tSender).flatMap(x -> {
-            return this.webClient.build().post().uri("/bankCredit/paycredit").bodyValue(tReceptor)
+         return this.webClient.build().post().uri("/bankCredit/paycredit").bodyValue(tReceptor)
                     .retrieve().bodyToFlux(BankCreditDto.class).next();
         });
     }
