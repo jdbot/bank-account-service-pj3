@@ -50,4 +50,6 @@ public interface BankAccountService {
     Mono<BankAccount> doPayCreditThird(TransactionPayCreditThirdDto t);
 
     Mono<BankAccount> findByNumberAccount(String numberAccount);
+
+    Mono<BankAccount> makePrimaryAccountKafka(String bankAccountId);
 }
