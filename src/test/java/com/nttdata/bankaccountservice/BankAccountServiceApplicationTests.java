@@ -59,7 +59,7 @@ class BankAccountServiceApplicationTests {
 
 	@Test
 	void registerTest() {
-		BankAccount ba = new BankAccount(null,"656567878",Float.parseFloat("1400"),"","63771520f2f20b0f9489203e","",
+		BankAccount ba = new BankAccount(null,"656567878",Float.parseFloat("1400"),"","63771520f2f20b0f9489203e",
 				"636eea6e33ec63cafaf72fd2",0,5,2,"",false,"","2022-11-30");
 
 		client.post()
