@@ -5,6 +5,7 @@ import com.nttdata.bankaccountservice.dto.*;
 import com.nttdata.bankaccountservice.document.Transaction;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -54,6 +55,7 @@ public class BankAccountServiceImpl implements BankAccountService {
 
     @Override
     public Mono<BankAccount> findById(String id) {
+        LOGGER.info("find by id " + id + "id");
         return this.bankAccountRepository.findById(id);
     }
 
@@ -203,7 +205,9 @@ public class BankAccountServiceImpl implements BankAccountService {
 
     @Override
     public Mono<BankAccount> makePrimaryAccount(String bankAccountId) {
+        LOGGER.info("making primary account " + bankAccountId + "id");
         return findById(bankAccountId).map(account -> {
+            LOGGER.info("found account " + account + "id");
             account.setPrimaryAccount(true);
             return account;
         }).flatMap(account -> update(account));

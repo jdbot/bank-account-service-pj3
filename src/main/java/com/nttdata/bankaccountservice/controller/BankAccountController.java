@@ -4,9 +4,13 @@ import com.nttdata.bankaccountservice.document.BankAccount;
 import com.nttdata.bankaccountservice.dto.*;
 import com.nttdata.bankaccountservice.document.Transaction;
 import com.nttdata.bankaccountservice.service.BankAccountService;
+import com.nttdata.bankaccountservice.service.impl.BankAccountServiceImpl;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +29,8 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/bankAccount")
 public class BankAccountController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BankAccountController.class);
 
     @Autowired
     private BankAccountService bankAccountService;
